@@ -136,7 +136,7 @@ public class InventoryHelper {
 
 		if (inventory instanceof ISidedInventory) {
 			ISidedInventory sidedInv = (ISidedInventory) inventory;
-			int slots[] = sidedInv.getAccessibleSlotsFromSide(side);
+			int[] slots = sidedInv.getAccessibleSlotsFromSide(side);
 
 			if (slots == null) {
 				return stack;
@@ -222,7 +222,7 @@ public class InventoryHelper {
 		if (!inventory.isItemValidForSlot(slot, stack)) {
 			return stack;
 		}
-		int stackLimit = inventory.getInventoryStackLimit();
+		int stackLimit = Math.min(inventory.getInventoryStackLimit(), stack.getMaxStackSize());
 		inventory.setInventorySlotContents(slot, ItemHelper.cloneStack(stack, Math.min(stack.stackSize, stackLimit)));
 		return stackLimit >= stack.stackSize ? null : stack.splitStack(stack.stackSize - stackLimit);
 	}

@@ -3,7 +3,12 @@ buildscript {
         mavenCentral()
         maven {
             name = "forge"
-            url = "http://files.minecraftforge.net/maven"
+            url = "https://files.minecraftforge.net/maven"
+        }
+        maven {
+            // GTNH ForgeGradle Fork
+            name = "GTNH Maven"
+            url = "http://jenkins.usrv.eu:8081/nexus/content/groups/public/"
         }
         maven {
             name = "sonatype"
@@ -11,7 +16,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:1.2.13'
     }
 }
 
@@ -29,13 +34,21 @@ else
     println "!! No build number set !!"
 }
 
-version = "1.7.10R3.0.3"
+version = "1.7.10R1.2.1"
 group = "cofh"
-archivesBaseName = "CoFHLib"
+archivesBaseName = "CoFHLib-dust"
 
 minecraft {
-    version = "1.7.10-10.13.4.1448-1.7.10"
-    runDir = "eclipse/assets"
+    version = "1.7.10-10.13.4.1614-1.7.10"
+}
+
+repositories {
+    maven {
+        name 'Overmind forge repo mirror'
+        url 'https://gregtech.overminddl1.com/'
+    }
+
+    maven { url 'https://jitpack.io' }
 }
 
 processResources
@@ -47,11 +60,11 @@ processResources
     // replace stuff in mcmod.info, nothing else
     from(sourceSets.main.resources.srcDirs) {
         include 'mcmod.info'
-                
+
         // replace version and mcversion
         expand 'version':project.version, 'mcversion':project.minecraft.version
     }
-        
+
     // copy everything else, thats not the mcmod.info
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'
@@ -83,3 +96,22 @@ artifacts {
 }
 
 project.tasks.build.dependsOn devJar, apiJar
+
+
+sourceSets {
+    main {
+        output.resourcesDir = java.outputDir
+    }
+}
+//当需要reobf jar包时重新设置资源文件夹
+gradle.taskGraph.whenReady {
+    taskGraph ->
+        if (taskGraph.hasTask(":reobfJar")) {
+            clearSourcesDir
+            sourceSets.main.output.resourcesDir(new File("build/resources"))
+        }
+}
+
+task clearSourcesDir {
+    delete(sourceSets.main.output.classesDirs)
+}
