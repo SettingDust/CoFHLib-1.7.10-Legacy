@@ -22,18 +22,6 @@ buildscript {
 
 apply plugin: 'forge'
 
-project.ext.buildnumber = "CUSTOM_BUILD" // referenced as project.buildnumber
-
-if (System.getenv().BUILD_NUMBER) // assuming jenkins ofcourse
-{
-    project.buildnumber = System.getenv().BUILD_NUMBER
-    println "Using build number ${project.buildnumber}..."
-}
-else
-{
-    println "!! No build number set !!"
-}
-
 version = "1.7.10R1.2.1"
 group = "cofh"
 archivesBaseName = "CoFHLib-dust"
@@ -71,23 +59,16 @@ processResources
     }
 }
 
-jar {
-    version = minecraft.version + project.version
-    classifier = project.buildnumber
-}
-
 task apiJar(type: Jar, dependsOn: 'sourceMainJava') {
     from ('build/sources/java') {
         include "**/api/**/*"
     }
-    version = "API${minecraft.version}${project.version}"
-    classifier = project.buildnumber
+    classifier('api')
 }
 
 task devJar(type: Jar, dependsOn: 'classes') {
     from sourceSets.main.output
-    version = minecraft.version + project.version
-    classifier = "DEV-${project.buildnumber}"
+    classifier("dev")
 }
 
 artifacts {
