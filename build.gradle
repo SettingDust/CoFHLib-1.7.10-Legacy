@@ -20,6 +20,10 @@ buildscript {
     }
 }
 
+plugins {
+    id 'maven-publish'
+}
+
 apply plugin: 'forge'
 
 version = "1.7.10R1.2.1"
@@ -40,27 +44,33 @@ repositories {
 }
 
 processResources
-{
-    // this will ensure that this task is redone when the versions change.
-    inputs.property "version", project.version
-    inputs.property "mcversion", project.minecraft.version
+        {
+            // this will ensure that this task is redone when the versions change.
+            inputs.property "version", project.version
+            inputs.property "mcversion", project.minecraft.version
 
-    // replace stuff in mcmod.info, nothing else
-    from(sourceSets.main.resources.srcDirs) {
-        include 'mcmod.info'
+            // replace stuff in mcmod.info, nothing else
+            from(sourceSets.main.resources.srcDirs) {
+                include 'mcmod.info'
 
-        // replace version and mcversion
-        expand 'version':project.version, 'mcversion':project.minecraft.version
-    }
+                // replace version and mcversion
+                expand 'version': project.version, 'mcversion': project.minecraft.version
+            }
 
-    // copy everything else, thats not the mcmod.info
-    from(sourceSets.main.resources.srcDirs) {
-        exclude 'mcmod.info'
+            // copy everything else, thats not the mcmod.info
+            from(sourceSets.main.resources.srcDirs) {
+                exclude 'mcmod.info'
+            }
+        }
+
+jar {
+    manifest {
+        attributes 'FMLAT': 'cofh_at.cfg'
     }
 }
 
 task apiJar(type: Jar, dependsOn: 'sourceMainJava') {
-    from ('build/sources/java') {
+    from('build/sources/java') {
         include "**/api/**/*"
     }
     classifier('api')
@@ -87,7 +97,7 @@ sourceSets {
 //当需要reobf jar包时重新设置资源文件夹
 gradle.taskGraph.whenReady {
     taskGraph ->
-        if (taskGraph.hasTask(":reobfJar")) {
+        if (taskGraph.hasTask(":reobf")) {
             clearSourcesDir
             sourceSets.main.output.resourcesDir(new File("build/resources"))
         }
@@ -95,4 +105,10 @@ gradle.taskGraph.whenReady {
 
 task clearSourcesDir {
     delete(sourceSets.main.output.classesDirs)
+}
+
+publishing.publications {
+    mavenJava(MavenPublication) {
+        from components.java
+    }
 }
